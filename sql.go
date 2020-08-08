@@ -92,3 +92,23 @@ left outer join pg_index ci
 on att2.attrelid = ci.indrelid and att2.attnum = any(ci.indkey)
 order by con.conname
 `
+
+const enumTypeDefSQL = `
+select distinct t.typname as enum_name
+from pg_type t 
+   join pg_enum e on t.oid = e.enumtypid  
+   join pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+WHERE n.nspname = $1
+order by t.typname
+`
+
+const enumValueDefSQL = `
+select e.enumlabel as enum_value,
+		e.enumsortorder as enum_order
+from pg_type t 
+   join pg_enum e on t.oid = e.enumtypid  
+   join pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+where n.nspname = $1
+AND t.typname = $2
+order by e.enumsortorder
+`

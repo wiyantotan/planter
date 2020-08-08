@@ -44,14 +44,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	enums, err := LoadEnumDef(db, *schema)
+	if err != nil {
+		log.Fatal(err)
+	}
+	enum, err := EnumToUML(enums)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	rel, err := ForeignKeyToUMLRelation(tbls)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var src []byte
 	src = append([]byte("@startuml\n" +
+		"\n!define type(x) <color:green>\"\"x\"\"</color>\n" +
 		"hide circle\n" +
 		"skinparam linetype ortho\n"), entry...)
+	src = append(src, enum...)
 	src = append(src, rel...)
 	src = append(src, []byte("@enduml\n")...)
 

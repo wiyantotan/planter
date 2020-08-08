@@ -93,6 +93,17 @@ type Table struct {
 	ForeingKeys []*ForeignKey
 }
 
+type EnumValue struct {
+	Value 		string
+	Order 		int
+}
+
+type Enum struct {
+	Schema      string
+	Name        string
+	Values      []*EnumValue
+}
+
 // IsCompositePK check if table is composite pk
 func (t *Table) IsCompositePK() bool {
 	cnt := 0
@@ -163,6 +174,27 @@ func LoadColumnDef(db Queryer, schema, table string) ([]*Column, error) {
 		cols = append(cols, &c)
 	}
 	return cols, nil
+}
+
+// LoadEnumValueDef load Postgres column definition
+func LoadEnumValueDef(db Queryer, schema, enumType string) ([]*EnumValue, error) {
+	enumValDefs, err := db.Query(enumValueDefSQL, schema, enumType)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load enum value def")
+	}
+	var enumVals []*EnumValue
+	for enumValDefs.Next() {
+		var c EnumValue
+		err := enumValDefs.Scan(
+			&c.Value,
+			&c.Order,
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan")
+		}
+		enumVals = append(enumVals, &c)
+	}
+	return enumVals, nil
 }
 
 // LoadForeignKeyDef load Postgres fk definition
@@ -244,6 +276,32 @@ func LoadTableDef(db Queryer, schema string) ([]*Table, error) {
 	return tbls, nil
 }
 
+// LoadEnumDef
+func LoadEnumDef(db Queryer, schema string) ([]*Enum, error) {
+	enumDefs, err := db.Query(enumTypeDefSQL, schema)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load enum def")
+	}
+	var enums []*Enum
+	for enumDefs.Next() {
+		e := &Enum{Schema: schema}
+		err := enumDefs.Scan(
+			&e.Name,
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan")
+		}
+		vals, err := LoadEnumValueDef(db, schema, e.Name)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("failed to get enum values of %s", e.Name))
+		}
+		e.Values = vals
+		enums = append(enums, e)
+	}
+
+	return enums, nil
+}
+
 // TableToUMLEntry table entry
 func TableToUMLEntry(tbls []*Table) ([]byte, error) {
 	tpl, err := template.New("entry").Parse(entryTmpl)
@@ -255,6 +313,23 @@ func TableToUMLEntry(tbls []*Table) ([]byte, error) {
 		buf := new(bytes.Buffer)
 		if err := tpl.Execute(buf, tbl); err != nil {
 			return nil, errors.Wrapf(err, "failed to execute template: %s", tbl.Name)
+		}
+		src = append(src, buf.Bytes()...)
+	}
+	return src, nil
+}
+
+// EnumToUML enum entry
+func EnumToUML(enms []*Enum) ([]byte, error) {
+	tpl, err := template.New("enum").Parse(enumTmpl)
+	if err != nil {
+		return nil, err
+	}
+	var src []byte
+	for _, enm := range enms {
+		buf := new(bytes.Buffer)
+		if err := tpl.Execute(buf, enm); err != nil {
+			return nil, errors.Wrapf(err, "failed to execute template: %s", enm.Name)
 		}
 		src = append(src, buf.Bytes()...)
 	}
