@@ -61,7 +61,7 @@ func main() {
 	var src []byte
 	src = append([]byte("@startuml\n" +
 		"\n!define type(x) <color:green>\"\"x\"\"</color>\n" +
-		"hide circle\n" +
+		"'hide circle\n" +
 		"skinparam linetype ortho\n"), entry...)
 	src = append(src, enum...)
 	src = append(src, rel...)

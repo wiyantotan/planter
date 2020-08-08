@@ -1,7 +1,7 @@
 package main
 
 const entryTmpl = `
-entity "{{ .Name }}" {
+entity "{{ .Name }}" <<(T,LightGreen)>> {
 {{- if .Comment.Valid }}
   {{ .Comment.String }}
   ..
@@ -25,7 +25,7 @@ const relationTmpl = `
 `
 
 const enumTmpl = `
-enum "{{ .Name }}" {
+enum "{{ .Name }}" <<(E,Crimson)>> {
 {{- range .Values }}
 	{{ .Value }}: {{ .Order }}	
 {{- end }}
