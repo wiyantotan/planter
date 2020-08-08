@@ -6,6 +6,11 @@
 
 Generate PlantUML ER diagram textual description from PostgreSQL tables
 
+This project forked from [github.com/ChristopherChudzicki/planter](https://github.com/ChristopherChudzicki/planter)
+- Support for postgresql v.12
+- Add types enumeration
+- Use circle T for table, and E for enum
+- Green color for data type
 
 ## Why created
 
@@ -17,14 +22,14 @@ A team with only software engineers doesn't need ER diagram that much as long as
 ## Installation
 
 ```
-go get -u github.com/achiku/planter
+go get -u github.com/wiyantotan/planter
 ```
 
 ## Quick Start
 
 ```
-$ planter postgres://planter@localhost/planter?sslmode=disable -o example.uml
-$ java -jar plantuml.jar -verbose example.uml
+$ $GOPATH/bin/planter postgres://postgreuser@localhost/dbname?sslmode=disable -o /output/to/path/example.puml
+$ java -jar plantuml.jar -verbose example.puml
 ```
 
 ![er diagram](./example/example_gen.png)
@@ -33,7 +38,7 @@ $ java -jar plantuml.jar -verbose example.uml
 ## Specify table names
 
 ```
-planter postgres://planter@localhost/planter?sslmode=disable \ 
+planter postgres://postgreuser@localhost/dbname?sslmode=disable \
     -t order_detail \
     -t sku \
     -t product
