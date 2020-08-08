@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"html/template"
+	"text/template"
 	"sort"
 	"strings"
 
